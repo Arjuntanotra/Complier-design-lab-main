@@ -1,0 +1,30 @@
+ %{
+ FILE *outfile;
+ %}
+ %%
+ "//".* { /* Ignore C single-line comments */ }
+ "\n//".* { /* Ignore C single-line comments */ }
+ "\n/*"([^*]|\\*+[^/])*"*/" { /* Ignore C multi-line comments */ }
+ [^/].* { fprintf(yyout, "%s", yytext); } // Copy
+ non-comment lines
+ "/"[^/].* { fprintf(yyout, "%s", yytext); } //
+ Handle lines starting with '/'
+ %%
+ int main() {
+ // Open output file for writing the cleaned content
+ outfile = fopen("output.c", "w");
+ if (outfile == NULL) {
+ perror("Error opening file for writing");
+ return 1;
+ }
+ // Redirect output to the file
+ yyout = outfile;
+ printf("Enter your program (Ctrl+D to end input):\n");
+ yylex(); // Start scanning and removing comments
+ fclose(outfile); // Close output file after processing
+ printf("Program without comments has been written to 'output.c'.\n");
+ return 0;
+ }
+ int yywrap() {
+return 1;
+ }
